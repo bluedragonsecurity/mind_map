@@ -1,0 +1,350 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+<meta charset="UTF-8">
+<title>Linux Kernel 6 — UAF Mind Map | Blue Dragon Security</title>
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=Share+Tech+Mono&family=Exo+2:wght@400;600;700;900&display=swap');
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  body {
+    background: #080c14;
+    width: 1366px;
+    overflow-x: hidden;
+  }
+  svg {
+    display: block;
+    font-family: 'Exo 2', 'Segoe UI', sans-serif;
+  }
+</style>
+</head>
+<body>
+<svg width="1366" height="1160"
+     xmlns="http://www.w3.org/2000/svg"
+     viewBox="0 0 1366 1160">
+
+<defs>
+  <!-- Background gradient -->
+  <radialGradient id="bgGrad" cx="50%" cy="50%" r="70%">
+    <stop offset="0%" stop-color="#0d1b2e"/>
+    <stop offset="100%" stop-color="#04080f"/>
+  </radialGradient>
+
+  <!-- Center node gradient -->
+  <radialGradient id="centerGrad" cx="40%" cy="35%" r="65%">
+    <stop offset="0%" stop-color="#ff6b35"/>
+    <stop offset="50%" stop-color="#e8191a"/>
+    <stop offset="100%" stop-color="#8b0000"/>
+  </radialGradient>
+
+  <!-- Glows per branch -->
+  <filter id="glowRed" x="-30%" y="-30%" width="160%" height="160%">
+    <feGaussianBlur stdDeviation="4" result="blur"/>
+    <feMerge><feMergeNode in="blur"/><feMergeNode in="SourceGraphic"/></feMerge>
+  </filter>
+  <filter id="glowCenter" x="-40%" y="-40%" width="180%" height="180%">
+    <feGaussianBlur stdDeviation="8" result="blur"/>
+    <feMerge><feMergeNode in="blur"/><feMergeNode in="SourceGraphic"/></feMerge>
+  </filter>
+  <filter id="softShadow" x="-20%" y="-20%" width="140%" height="140%">
+    <feDropShadow dx="2" dy="3" stdDeviation="4" flood-color="#000" flood-opacity="0.6"/>
+  </filter>
+
+  <!-- Grid pattern -->
+  <pattern id="grid" width="40" height="40" patternUnits="userSpaceOnUse">
+    <path d="M 40 0 L 0 0 0 40" fill="none" stroke="#0a1628" stroke-width="0.8"/>
+  </pattern>
+
+  <!-- Branch colors as gradients -->
+  <linearGradient id="grad1" x1="0%" y1="0%" x2="100%" y2="100%">
+    <stop offset="0%" stop-color="#ff4757"/><stop offset="100%" stop-color="#c0392b"/>
+  </linearGradient>
+  <linearGradient id="grad2" x1="0%" y1="0%" x2="100%" y2="100%">
+    <stop offset="0%" stop-color="#ff9f43"/><stop offset="100%" stop-color="#e67e22"/>
+  </linearGradient>
+  <linearGradient id="grad3" x1="0%" y1="0%" x2="100%" y2="100%">
+    <stop offset="0%" stop-color="#a55eea"/><stop offset="100%" stop-color="#7d3c98"/>
+  </linearGradient>
+  <linearGradient id="grad4" x1="0%" y1="0%" x2="100%" y2="100%">
+    <stop offset="0%" stop-color="#2ed573"/><stop offset="100%" stop-color="#1e8449"/>
+  </linearGradient>
+  <linearGradient id="grad5" x1="0%" y1="0%" x2="100%" y2="100%">
+    <stop offset="0%" stop-color="#54a0ff"/><stop offset="100%" stop-color="#2980b9"/>
+  </linearGradient>
+  <linearGradient id="grad6" x1="0%" y1="0%" x2="100%" y2="100%">
+    <stop offset="0%" stop-color="#01cbc6"/><stop offset="100%" stop-color="#118a7e"/>
+  </linearGradient>
+</defs>
+
+<!-- ████ BACKGROUND ████ -->
+<rect width="1366" height="1160" fill="url(#bgGrad)"/>
+<rect width="1366" height="1160" fill="url(#grid)" opacity="0.6"/>
+
+<!-- Subtle scanlines -->
+<rect width="1366" height="1160" fill="none" stroke="#0f2340" stroke-width="0.3" opacity="0.3"/>
+
+<!-- Top hex deco elements -->
+<polygon points="50,20 70,10 90,20 90,40 70,50 50,40" fill="none" stroke="#1a3a5c" stroke-width="1" opacity="0.5"/>
+<polygon points="1276,20 1296,10 1316,20 1316,40 1296,50 1276,40" fill="none" stroke="#1a3a5c" stroke-width="1" opacity="0.5"/>
+<circle cx="70" cy="30" r="4" fill="#0d2440" stroke="#1e4976" stroke-width="1"/>
+<circle cx="1296" cy="30" r="4" fill="#0d2440" stroke="#1e4976" stroke-width="1"/>
+
+<!-- ████ TITLE AREA ████ -->
+<rect x="383" y="12" width="600" height="48" rx="4" fill="#090f1a" stroke="#1a3a6e" stroke-width="1"/>
+<rect x="383" y="12" width="600" height="3" rx="2" fill="url(#centerGrad)"/>
+<text x="683" y="34" text-anchor="middle" font-size="14" fill="#e74c3c" font-weight="900" font-family="'Exo 2', sans-serif" letter-spacing="3">LINUX KERNEL 6 — USE-AFTER-FREE (UAF)</text>
+<text x="683" y="52" text-anchor="middle" font-size="11" fill="#4a7fa5" font-family="'Share Tech Mono', monospace" letter-spacing="2">MITIGASI  ◆  TEKNIK BYPASS  ◆  TARGET SUBSYSTEM</text>
+
+<!-- ████ CENTER → BRANCH CONNECTIONS ████ -->
+<!-- To B1 UAF Fundamentals (upper-left 315, 215) -->
+<path d="M608,548 C530,460 430,340 393,215" stroke="#ff4757" stroke-width="2.5" fill="none" stroke-dasharray="6,3" opacity="0.75"/>
+<!-- To B2 SLUB Allocator (left 255, 578) -->
+<path d="M555,578 C470,578 380,578 333,578" stroke="#ff9f43" stroke-width="2.5" fill="none" stroke-dasharray="6,3" opacity="0.75"/>
+<!-- To B3 Exploitation Primitives (lower-left 315, 940) -->
+<path d="M608,608 C530,700 430,820 393,940" stroke="#a55eea" stroke-width="2.5" fill="none" stroke-dasharray="6,3" opacity="0.75"/>
+<!-- To B4 Mitigasi (upper-right 1050, 215) -->
+<path d="M758,548 C836,460 936,340 973,215" stroke="#2ed573" stroke-width="2.5" fill="none" stroke-dasharray="6,3" opacity="0.75"/>
+<!-- To B5 Teknik Bypass (right 1110, 578) -->
+<path d="M811,578 C896,578 986,578 1033,578" stroke="#54a0ff" stroke-width="2.5" fill="none" stroke-dasharray="6,3" opacity="0.75"/>
+<!-- To B6 Target Subsystems (lower-right 1050, 940) -->
+<path d="M758,608 C836,700 936,820 973,940" stroke="#01cbc6" stroke-width="2.5" fill="none" stroke-dasharray="6,3" opacity="0.75"/>
+
+<!-- ████ BRANCH → SUBNODE LINES ████ -->
+<!-- B1 → subs (branch center 315,215, subs right edge 198, y= 105,155,205,255) -->
+<line x1="237" y1="215" x2="198" y2="105" stroke="#ff4757" stroke-width="1.4" opacity="0.55"/>
+<line x1="237" y1="215" x2="198" y2="155" stroke="#ff4757" stroke-width="1.4" opacity="0.55"/>
+<line x1="237" y1="215" x2="198" y2="205" stroke="#ff4757" stroke-width="1.4" opacity="0.55"/>
+<line x1="237" y1="215" x2="198" y2="255" stroke="#ff4757" stroke-width="1.4" opacity="0.55"/>
+
+<!-- B2 → subs (branch center 255,578, subs right edge 198, y=430,480,530,580,630) -->
+<line x1="177" y1="578" x2="198" y2="430" stroke="#ff9f43" stroke-width="1.4" opacity="0.55"/>
+<line x1="177" y1="578" x2="198" y2="480" stroke="#ff9f43" stroke-width="1.4" opacity="0.55"/>
+<line x1="177" y1="578" x2="198" y2="530" stroke="#ff9f43" stroke-width="1.4" opacity="0.55"/>
+<line x1="177" y1="578" x2="198" y2="580" stroke="#ff9f43" stroke-width="1.4" opacity="0.55"/>
+<line x1="177" y1="578" x2="198" y2="630" stroke="#ff9f43" stroke-width="1.4" opacity="0.55"/>
+
+<!-- B3 → subs (branch center 315,940, subs right edge 198, y=820,870,920,970,1020) -->
+<line x1="237" y1="940" x2="198" y2="820" stroke="#a55eea" stroke-width="1.4" opacity="0.55"/>
+<line x1="237" y1="940" x2="198" y2="870" stroke="#a55eea" stroke-width="1.4" opacity="0.55"/>
+<line x1="237" y1="940" x2="198" y2="920" stroke="#a55eea" stroke-width="1.4" opacity="0.55"/>
+<line x1="237" y1="940" x2="198" y2="970" stroke="#a55eea" stroke-width="1.4" opacity="0.55"/>
+<line x1="237" y1="940" x2="198" y2="1020" stroke="#a55eea" stroke-width="1.4" opacity="0.55"/>
+
+<!-- B4 → subs (branch center 1050,215, subs left edge 1168, y=105,155,205,255,305,355) -->
+<line x1="1128" y1="215" x2="1168" y2="105" stroke="#2ed573" stroke-width="1.4" opacity="0.55"/>
+<line x1="1128" y1="215" x2="1168" y2="155" stroke="#2ed573" stroke-width="1.4" opacity="0.55"/>
+<line x1="1128" y1="215" x2="1168" y2="205" stroke="#2ed573" stroke-width="1.4" opacity="0.55"/>
+<line x1="1128" y1="215" x2="1168" y2="255" stroke="#2ed573" stroke-width="1.4" opacity="0.55"/>
+<line x1="1128" y1="215" x2="1168" y2="305" stroke="#2ed573" stroke-width="1.4" opacity="0.55"/>
+<line x1="1128" y1="215" x2="1168" y2="355" stroke="#2ed573" stroke-width="1.4" opacity="0.55"/>
+
+<!-- B5 → subs (branch center 1110,578, subs left edge 1168, y=430,480,530,580,630,680) -->
+<line x1="1188" y1="578" x2="1168" y2="430" stroke="#54a0ff" stroke-width="1.4" opacity="0.55"/>
+<line x1="1188" y1="578" x2="1168" y2="480" stroke="#54a0ff" stroke-width="1.4" opacity="0.55"/>
+<line x1="1188" y1="578" x2="1168" y2="530" stroke="#54a0ff" stroke-width="1.4" opacity="0.55"/>
+<line x1="1188" y1="578" x2="1168" y2="580" stroke="#54a0ff" stroke-width="1.4" opacity="0.55"/>
+<line x1="1188" y1="578" x2="1168" y2="630" stroke="#54a0ff" stroke-width="1.4" opacity="0.55"/>
+<line x1="1188" y1="578" x2="1168" y2="680" stroke="#54a0ff" stroke-width="1.4" opacity="0.55"/>
+
+<!-- B6 → subs (branch center 1050,940, subs left edge 1168, y=820,870,920,970,1020) -->
+<line x1="1128" y1="940" x2="1168" y2="820" stroke="#01cbc6" stroke-width="1.4" opacity="0.55"/>
+<line x1="1128" y1="940" x2="1168" y2="870" stroke="#01cbc6" stroke-width="1.4" opacity="0.55"/>
+<line x1="1128" y1="940" x2="1168" y2="920" stroke="#01cbc6" stroke-width="1.4" opacity="0.55"/>
+<line x1="1128" y1="940" x2="1168" y2="970" stroke="#01cbc6" stroke-width="1.4" opacity="0.55"/>
+<line x1="1128" y1="940" x2="1168" y2="1020" stroke="#01cbc6" stroke-width="1.4" opacity="0.55"/>
+
+<!-- ████ CENTER NODE ████ -->
+<ellipse cx="683" cy="578" rx="128" ry="54" fill="#0a0e18" stroke="#e8191a" stroke-width="2.5" filter="url(#glowCenter)"/>
+<ellipse cx="683" cy="578" rx="128" ry="54" fill="url(#centerGrad)" opacity="0.18"/>
+<!-- Inner ring -->
+<ellipse cx="683" cy="578" rx="118" ry="44" fill="none" stroke="#ff4757" stroke-width="0.7" opacity="0.4"/>
+<!-- Pulse dots -->
+<circle cx="555" cy="578" r="4" fill="#ff4757" opacity="0.9"/>
+<circle cx="811" cy="578" r="4" fill="#ff4757" opacity="0.9"/>
+<circle cx="683" cy="524" r="4" fill="#ff4757" opacity="0.9"/>
+<circle cx="683" cy="632" r="4" fill="#ff4757" opacity="0.9"/>
+<!-- Center text -->
+<text x="683" y="567" text-anchor="middle" font-size="17" fill="#ff4757" font-weight="900" font-family="'Exo 2', sans-serif" letter-spacing="1">LINUX KERNEL 6</text>
+<text x="683" y="587" text-anchor="middle" font-size="13" fill="#ff9f43" font-weight="600" font-family="'Exo 2', sans-serif" letter-spacing="2">USE-AFTER-FREE</text>
+
+<!-- ████ BRANCH NODES ████ -->
+
+<!-- ── B1: UAF Fundamentals ── red, upper-left (center 315, 215) -->
+<rect x="237" y="197" width="156" height="36" rx="5" fill="#0d0f18" stroke="#ff4757" stroke-width="1.8" filter="url(#softShadow)"/>
+<rect x="237" y="197" width="156" height="4" rx="3" fill="url(#grad1)"/>
+<text x="315" y="215" text-anchor="middle" font-size="11" fill="#ff4757" font-weight="700" font-family="'Exo 2', sans-serif" letter-spacing="0.5">⬡ UAF</text>
+<text x="315" y="228" text-anchor="middle" font-size="10" fill="#ff7675" font-weight="600" font-family="'Exo 2', sans-serif">FUNDAMENTALS</text>
+
+<!-- ── B2: SLUB Allocator ── orange, left (center 255, 578) -->
+<rect x="177" y="560" width="156" height="36" rx="5" fill="#0d0f18" stroke="#ff9f43" stroke-width="1.8" filter="url(#softShadow)"/>
+<rect x="177" y="560" width="156" height="4" rx="3" fill="url(#grad2)"/>
+<text x="255" y="578" text-anchor="middle" font-size="11" fill="#ff9f43" font-weight="700" font-family="'Exo 2', sans-serif" letter-spacing="0.5">⬡ SLUB</text>
+<text x="255" y="591" text-anchor="middle" font-size="10" fill="#feca57" font-weight="600" font-family="'Exo 2', sans-serif">ALLOCATOR</text>
+
+<!-- ── B3: Exploitation Primitives ── purple, lower-left (center 315, 940) -->
+<rect x="237" y="922" width="156" height="36" rx="5" fill="#0d0f18" stroke="#a55eea" stroke-width="1.8" filter="url(#softShadow)"/>
+<rect x="237" y="922" width="156" height="4" rx="3" fill="url(#grad3)"/>
+<text x="315" y="940" text-anchor="middle" font-size="11" fill="#a55eea" font-weight="700" font-family="'Exo 2', sans-serif" letter-spacing="0.5">⬡ EXPLOITATION</text>
+<text x="315" y="953" text-anchor="middle" font-size="10" fill="#c39bd3" font-weight="600" font-family="'Exo 2', sans-serif">PRIMITIVES</text>
+
+<!-- ── B4: Mitigasi Kernel 6.x ── green, upper-right (center 1050, 215) -->
+<rect x="972" y="197" width="156" height="36" rx="5" fill="#0d0f18" stroke="#2ed573" stroke-width="1.8" filter="url(#softShadow)"/>
+<rect x="972" y="197" width="156" height="4" rx="3" fill="url(#grad4)"/>
+<text x="1050" y="215" text-anchor="middle" font-size="11" fill="#2ed573" font-weight="700" font-family="'Exo 2', sans-serif" letter-spacing="0.5">⬡ MITIGASI</text>
+<text x="1050" y="228" text-anchor="middle" font-size="10" fill="#55efc4" font-weight="600" font-family="'Exo 2', sans-serif">KERNEL 6.x</text>
+
+<!-- ── B5: Teknik Bypass ── blue, right (center 1110, 578) -->
+<rect x="1033" y="560" width="156" height="36" rx="5" fill="#0d0f18" stroke="#54a0ff" stroke-width="1.8" filter="url(#softShadow)"/>
+<rect x="1033" y="560" width="156" height="4" rx="3" fill="url(#grad5)"/>
+<text x="1111" y="578" text-anchor="middle" font-size="11" fill="#54a0ff" font-weight="700" font-family="'Exo 2', sans-serif" letter-spacing="0.5">⬡ TEKNIK</text>
+<text x="1111" y="591" text-anchor="middle" font-size="10" fill="#74b9ff" font-weight="600" font-family="'Exo 2', sans-serif">BYPASS</text>
+
+<!-- ── B6: Target Subsystems ── teal, lower-right (center 1050, 940) -->
+<rect x="972" y="922" width="156" height="36" rx="5" fill="#0d0f18" stroke="#01cbc6" stroke-width="1.8" filter="url(#softShadow)"/>
+<rect x="972" y="922" width="156" height="4" rx="3" fill="url(#grad6)"/>
+<text x="1050" y="940" text-anchor="middle" font-size="11" fill="#01cbc6" font-weight="700" font-family="'Exo 2', sans-serif" letter-spacing="0.5">⬡ TARGET</text>
+<text x="1050" y="953" text-anchor="middle" font-size="10" fill="#55efc4" font-weight="600" font-family="'Exo 2', sans-serif">SUBSYSTEMS</text>
+
+<!-- ████ SUBNODES ████ -->
+<!-- Sub box helper: left-side x=8, w=190, right edge=198, center_x=103 -->
+<!--                  right-side x=1168, w=190, right edge=1358, center_x=1263 -->
+<!-- Height=26, y = center_y - 13 -->
+
+<!-- ══ B1 SUBNODES (red) — y centers: 105, 155, 205, 255 ══ -->
+<rect x="8" y="92" width="190" height="26" rx="4" fill="#1a0508" stroke="#ff4757" stroke-width="1"/>
+<text x="14" y="109" font-size="10.5" fill="#ff7675" font-family="'Share Tech Mono', monospace">▸ Dangling ptr post-kfree()</text>
+
+<rect x="8" y="142" width="190" height="26" rx="4" fill="#1a0508" stroke="#ff4757" stroke-width="1"/>
+<text x="14" y="159" font-size="10.5" fill="#ff7675" font-family="'Share Tech Mono', monospace">▸ Heap chunk di-reuse objek</text>
+
+<rect x="8" y="192" width="190" height="26" rx="4" fill="#1a0508" stroke="#ff4757" stroke-width="1"/>
+<text x="14" y="209" font-size="10.5" fill="#ff7675" font-family="'Share Tech Mono', monospace">▸ Type confusion antar objek</text>
+
+<rect x="8" y="242" width="190" height="26" rx="4" fill="#1a0508" stroke="#ff4757" stroke-width="1"/>
+<text x="14" y="259" font-size="10.5" fill="#ff7675" font-family="'Share Tech Mono', monospace">▸ CWE-416 | Memory Safety</text>
+
+<!-- ══ B2 SUBNODES (orange) — y centers: 430, 480, 530, 580, 630 ══ -->
+<rect x="8" y="417" width="190" height="26" rx="4" fill="#1a0d00" stroke="#ff9f43" stroke-width="1"/>
+<text x="14" y="434" font-size="10.5" fill="#feca57" font-family="'Share Tech Mono', monospace">▸ kmem_cache per-type obj</text>
+
+<rect x="8" y="467" width="190" height="26" rx="4" fill="#1a0d00" stroke="#ff9f43" stroke-width="1"/>
+<text x="14" y="484" font-size="10.5" fill="#feca57" font-family="'Share Tech Mono', monospace">▸ kmalloc-8 ~ kmalloc-4096</text>
+
+<rect x="8" y="517" width="190" height="26" rx="4" fill="#1a0d00" stroke="#ff9f43" stroke-width="1"/>
+<text x="14" y="534" font-size="10.5" fill="#feca57" font-family="'Share Tech Mono', monospace">▸ Freelist in-band (next ptr)</text>
+
+<rect x="8" y="567" width="190" height="26" rx="4" fill="#1a0d00" stroke="#ff9f43" stroke-width="1"/>
+<text x="14" y="584" font-size="10.5" fill="#feca57" font-family="'Share Tech Mono', monospace">▸ Per-CPU slab &amp; partial list</text>
+
+<rect x="8" y="617" width="190" height="26" rx="4" fill="#1a0d00" stroke="#ff9f43" stroke-width="1"/>
+<text x="14" y="634" font-size="10.5" fill="#feca57" font-family="'Share Tech Mono', monospace">▸ SLUB_DEBUG tracing flags</text>
+
+<!-- ══ B3 SUBNODES (purple) — y centers: 820, 870, 920, 970, 1020 ══ -->
+<rect x="8" y="807" width="190" height="26" rx="4" fill="#100618" stroke="#a55eea" stroke-width="1"/>
+<text x="14" y="824" font-size="10.5" fill="#c39bd3" font-family="'Share Tech Mono', monospace">▸ Arbitrary Read → info leak</text>
+
+<rect x="8" y="857" width="190" height="26" rx="4" fill="#100618" stroke="#a55eea" stroke-width="1"/>
+<text x="14" y="874" font-size="10.5" fill="#c39bd3" font-family="'Share Tech Mono', monospace">▸ Arbitrary Write → cred/fptr</text>
+
+<rect x="8" y="907" width="190" height="26" rx="4" fill="#100618" stroke="#a55eea" stroke-width="1"/>
+<text x="14" y="924" font-size="10.5" fill="#c39bd3" font-family="'Share Tech Mono', monospace">▸ RIP ctrl via vtable/ops ptr</text>
+
+<rect x="8" y="957" width="190" height="26" rx="4" fill="#100618" stroke="#a55eea" stroke-width="1"/>
+<text x="14" y="974" font-size="10.5" fill="#c39bd3" font-family="'Share Tech Mono', monospace">▸ Cross-cache type confusion</text>
+
+<rect x="8" y="1007" width="190" height="26" rx="4" fill="#100618" stroke="#a55eea" stroke-width="1"/>
+<text x="14" y="1024" font-size="10.5" fill="#c39bd3" font-family="'Share Tech Mono', monospace">▸ KASLR defeat via addr leak</text>
+
+<!-- ══ B4 SUBNODES (green) — y centers: 105, 155, 205, 255, 305, 355 ══ -->
+<rect x="1168" y="92" width="190" height="26" rx="4" fill="#00150a" stroke="#2ed573" stroke-width="1"/>
+<text x="1174" y="109" font-size="10.5" fill="#55efc4" font-family="'Share Tech Mono', monospace">▸ KFENCE: sampled detector</text>
+
+<rect x="1168" y="142" width="190" height="26" rx="4" fill="#00150a" stroke="#2ed573" stroke-width="1"/>
+<text x="1174" y="159" font-size="10.5" fill="#55efc4" font-family="'Share Tech Mono', monospace">▸ FREELIST_HARDENED (XOR)</text>
+
+<rect x="1168" y="192" width="190" height="26" rx="4" fill="#00150a" stroke="#2ed573" stroke-width="1"/>
+<text x="1174" y="209" font-size="10.5" fill="#55efc4" font-family="'Share Tech Mono', monospace">▸ INIT_ON_FREE: zero slab</text>
+
+<rect x="1168" y="242" width="190" height="26" rx="4" fill="#00150a" stroke="#2ed573" stroke-width="1"/>
+<text x="1174" y="259" font-size="10.5" fill="#55efc4" font-family="'Share Tech Mono', monospace">▸ kCFI: Control Flow Integrity</text>
+
+<rect x="1168" y="292" width="190" height="26" rx="4" fill="#00150a" stroke="#2ed573" stroke-width="1"/>
+<text x="1174" y="309" font-size="10.5" fill="#55efc4" font-family="'Share Tech Mono', monospace">▸ KASLR + SMEP + SMAP</text>
+
+<rect x="1168" y="342" width="190" height="26" rx="4" fill="#00150a" stroke="#2ed573" stroke-width="1"/>
+<text x="1174" y="359" font-size="10.5" fill="#55efc4" font-family="'Share Tech Mono', monospace">▸ FREELIST_RANDOM shuffle</text>
+
+<!-- ══ B5 SUBNODES (blue) — y centers: 430, 480, 530, 580, 630, 680 ══ -->
+<rect x="1168" y="417" width="190" height="26" rx="4" fill="#020e1a" stroke="#54a0ff" stroke-width="1"/>
+<text x="1174" y="434" font-size="10.5" fill="#74b9ff" font-family="'Share Tech Mono', monospace">▸ Heap Spray &amp; Grooming</text>
+
+<rect x="1168" y="467" width="190" height="26" rx="4" fill="#020e1a" stroke="#54a0ff" stroke-width="1"/>
+<text x="1174" y="484" font-size="10.5" fill="#74b9ff" font-family="'Share Tech Mono', monospace">▸ Cross-cache Confusion atk</text>
+
+<rect x="1168" y="517" width="190" height="26" rx="4" fill="#020e1a" stroke="#54a0ff" stroke-width="1"/>
+<text x="1174" y="534" font-size="10.5" fill="#74b9ff" font-family="'Share Tech Mono', monospace">▸ msg_msg / pipe_buf spray</text>
+
+<rect x="1168" y="567" width="190" height="26" rx="4" fill="#020e1a" stroke="#54a0ff" stroke-width="1"/>
+<text x="1174" y="584" font-size="10.5" fill="#74b9ff" font-family="'Share Tech Mono', monospace">▸ userfaultfd race control</text>
+
+<rect x="1168" y="617" width="190" height="26" rx="4" fill="#020e1a" stroke="#54a0ff" stroke-width="1"/>
+<text x="1174" y="634" font-size="10.5" fill="#74b9ff" font-family="'Share Tech Mono', monospace">▸ FUSE passthrough (race)</text>
+
+<rect x="1168" y="667" width="190" height="26" rx="4" fill="#020e1a" stroke="#54a0ff" stroke-width="1"/>
+<text x="1174" y="684" font-size="10.5" fill="#74b9ff" font-family="'Share Tech Mono', monospace">▸ setxattr arbitrary alloc</text>
+
+<!-- ══ B6 SUBNODES (teal) — y centers: 820, 870, 920, 970, 1020 ══ -->
+<rect x="1168" y="807" width="190" height="26" rx="4" fill="#001614" stroke="#01cbc6" stroke-width="1"/>
+<text x="1174" y="824" font-size="10.5" fill="#81ecec" font-family="'Share Tech Mono', monospace">▸ ksmbd: in-kernel SMB3</text>
+
+<rect x="1168" y="857" width="190" height="26" rx="4" fill="#001614" stroke="#01cbc6" stroke-width="1"/>
+<text x="1174" y="874" font-size="10.5" fill="#81ecec" font-family="'Share Tech Mono', monospace">▸ io_uring async I/O ring</text>
+
+<rect x="1168" y="907" width="190" height="26" rx="4" fill="#001614" stroke="#01cbc6" stroke-width="1"/>
+<text x="1174" y="924" font-size="10.5" fill="#81ecec" font-family="'Share Tech Mono', monospace">▸ BPF verifier type escape</text>
+
+<rect x="1168" y="957" width="190" height="26" rx="4" fill="#001614" stroke="#01cbc6" stroke-width="1"/>
+<text x="1174" y="974" font-size="10.5" fill="#81ecec" font-family="'Share Tech Mono', monospace">▸ mm/mseal CVE-2026-23416</text>
+
+<rect x="1168" y="1007" width="190" height="26" rx="4" fill="#001614" stroke="#01cbc6" stroke-width="1"/>
+<text x="1174" y="1024" font-size="10.5" fill="#81ecec" font-family="'Share Tech Mono', monospace">▸ net: sk_buff / socket layer</text>
+
+<!-- ████ LEGEND BAR ████ -->
+<rect x="250" y="1075" width="866" height="52" rx="6" fill="#08111e" stroke="#1a3a5c" stroke-width="1"/>
+<rect x="250" y="1075" width="866" height="3" rx="3" fill="url(#grad1)" opacity="0.7"/>
+
+<!-- Legend items -->
+<rect x="270" y="1090" width="14" height="14" rx="3" fill="#ff4757"/>
+<text x="290" y="1101" font-size="10" fill="#aaa" font-family="'Exo 2', sans-serif">UAF Fundamentals</text>
+
+<rect x="420" y="1090" width="14" height="14" rx="3" fill="#ff9f43"/>
+<text x="440" y="1101" font-size="10" fill="#aaa" font-family="'Exo 2', sans-serif">SLUB Allocator</text>
+
+<rect x="555" y="1090" width="14" height="14" rx="3" fill="#a55eea"/>
+<text x="575" y="1101" font-size="10" fill="#aaa" font-family="'Exo 2', sans-serif">Exploitation Primitives</text>
+
+<rect x="720" y="1090" width="14" height="14" rx="3" fill="#2ed573"/>
+<text x="740" y="1101" font-size="10" fill="#aaa" font-family="'Exo 2', sans-serif">Mitigasi Kernel 6.x</text>
+
+<rect x="860" y="1090" width="14" height="14" rx="3" fill="#54a0ff"/>
+<text x="880" y="1101" font-size="10" fill="#aaa" font-family="'Exo 2', sans-serif">Teknik Bypass</text>
+
+<rect x="980" y="1090" width="14" height="14" rx="3" fill="#01cbc6"/>
+<text x="1000" y="1101" font-size="10" fill="#aaa" font-family="'Exo 2', sans-serif">Target Subsystems</text>
+
+<!-- Second legend row -->
+<text x="683" y="1118" text-anchor="middle" font-size="9.5" fill="#2a4a6a" font-family="'Share Tech Mono', monospace">Blue Dragon Security | bluedragonsec.com | @w1sdom | Linux Kernel 6 UAF Research — Tangerang, Indonesia</text>
+
+<!-- Corner scan deco -->
+<line x1="0" y1="1155" x2="1366" y2="1155" stroke="#0d2040" stroke-width="1"/>
+<text x="10" y="1148" font-size="8" fill="#1a3050" font-family="'Share Tech Mono', monospace">0x00000000</text>
+<text x="1230" y="1148" font-size="8" fill="#1a3050" font-family="'Share Tech Mono', monospace">CVE-2026-23416</text>
+
+<!-- Corner bracket decorations -->
+<path d="M0,70 L0,0 L70,0" fill="none" stroke="#1a3a5c" stroke-width="1.5"/>
+<path d="M1366,70 L1366,0 L1296,0" fill="none" stroke="#1a3a5c" stroke-width="1.5"/>
+<path d="M0,1090 L0,1160 L70,1160" fill="none" stroke="#1a3a5c" stroke-width="1.5"/>
+<path d="M1366,1090 L1366,1160 L1296,1160" fill="none" stroke="#1a3a5c" stroke-width="1.5"/>
+
+</svg>
+</body>
+</html>
